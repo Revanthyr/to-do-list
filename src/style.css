@@ -1,0 +1,27 @@
+*{
+    margin:0;
+    padding:0;
+}
+body{
+    display:grid;
+    grid-template-areas: 
+    'top-left top-right'
+    'bottom-left bottom-right'
+    ;
+    grid-template-rows: 150px 1fr;
+    grid-template-columns: 300px 1fr;
+    height:100vh;
+}
+.top-left{
+    grid-area: top-left;
+}
+.projects-area{
+    grid-area: bottom-left;
+    padding-left:15px;
+}
+.todos-area{
+    grid-area: bottom-right;
+}
+.header{
+    grid-area:top-right;
+}
