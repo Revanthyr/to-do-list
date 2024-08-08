@@ -10,7 +10,31 @@
 <div class="top-left"></div>
     <div class="projects-area"><button class="project-btn">Add project!</button></div>
 <div class="todos-area"></div>
-<div class="header"></div>
-    
+<div class="header">
+    <h1>WORK WORK</h1>
+</div>
+<dialog>
+    <form method="dialog" novalidate>
+       
+           <h2>New To-do</h2>
+           <div class="container"><label for="name">Name of To-do:</label>
+            <input type="text" id="name" required=""></div>
+           <div class="container"> <label for="date">Due Date</label>
+            <input type="date" id="date" ></div>
+          <div class="container"><label for="importance">Importance Level</label>
+            <select name="importance" id="importance" required=""></div>
+           
+        <option value="importance-4">Very Important</option>
+        <option value="importance-3">Important</option>
+        <option value="importance-2">Minor Importance</option>
+        <option value="importance-1">Trivial</option>    
+        </select>
+    </div>
+        
+        <div class="buttons-container">
+            <button class="cancel-btn" formmethod="dialog">Cancel</button><button type="submit" id="submit" class="confirm-btn">Confirm</button>
+        </div>
+    </form>
+</dialog>
 </body>
 </html>

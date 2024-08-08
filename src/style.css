@@ -5,23 +5,126 @@
 body{
     display:grid;
     grid-template-areas: 
-    'top-left top-right'
+    'top-right top-right'
     'bottom-left bottom-right'
     ;
     grid-template-rows: 150px 1fr;
     grid-template-columns: 300px 1fr;
     height:100vh;
+    background-color: rgb(8, 8, 20);
+    padding-left: 30px;
+    overflow:auto;
 }
-.top-left{
-    grid-area: top-left;
+input{
+    font-size: 1.3rem;
 }
+
 .projects-area{
     grid-area: bottom-left;
     padding-left:15px;
+    display:flex;
+    flex-direction: column;
+    gap:15px;
 }
 .todos-area{
     grid-area: bottom-right;
+    color:white;
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(100px,47%));
+    grid-template-rows: 1fr 1fr 1fr ;
+    overflow:auto;
+    gap:15px;
+    grid-auto-rows: 1fr;
+    margin-top: 35px;
+    
+}
+.todos-area button{
+    position:absolute;
+    top:150px;
+
 }
 .header{
     grid-area:top-right;
+}
+.project-div{
+    color:white;
+    font-size: 1.5rem;
+}
+.confirm-btn, .cancel-btn{
+    width:49%;
+    border-width: 0;
+    border-radius: 2px;
+    font-size: 1.3rem;
+}
+.buttons-container{
+    display: flex;
+    flex-direction: row;
+    gap:10px;
+}
+.confirm-btn{
+    background-color: green;
+}
+.cancel-btn{
+    background-color: red;
+}
+.project-div:hover{
+    background-color: rgb(31, 31, 124);
+}
+.todos-div{
+    background-color: rgb(60, 66, 66);
+}
+.very-important{
+background-color: red;
+}
+.important{
+    background-color: orange;
+}
+.minor{
+    background-color: blue;
+}
+.trivial{
+    background-color: green;
+}
+dialog{
+    position: absolute;
+    top:50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    height:600px;
+    width:400px;
+
+}
+form{
+    height: 100%;
+    display:flex;
+    flex-direction: column;
+    gap:20px;
+    align-items: center;
+}
+form *{
+   width:95%;
+}
+.container{
+    font-size:1.5rem;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+label{
+    text-align: center;
+}
+form h2{
+    font-size: 2.5rem;
+    align-self: center;
+    text-align: center;
+  
+}
+select{
+    font-size: 1.3rem;
+}
+h1{
+    color:white;
+    
+    text-align: center;
+    font-size: 3rem;
 }
