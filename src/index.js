@@ -1,5 +1,5 @@
 import './style.css'
-// import {someyhing} from "date-fns" 
+ import {differenceInCalendarDays} from "date-fns" 
 
 console.log("hey")
 
@@ -8,7 +8,9 @@ const main = {
     projects : [],
     addProject : function(project){this.projects.push(project); return this.projects},
     getProjects : function(){return main.projects},
-
+    removeProject: function(project){
+        this.projects.splice(this.projects.indexOf(project),1)
+    }
 
 }
 
@@ -22,7 +24,10 @@ function createProject (name,todolist){
      const addTodo = function(todo){todos.push(todo); return todos}
     const getTodos = function(){return todos};
     let isGenerated = false
-    return {name,getTodos,addTodo,isGenerated,todos};
+    const removeTodo = function(todo){
+        todos.splice(todos.indexOf(todo),1)
+    }
+    return {name,getTodos,addTodo,isGenerated,todos,removeTodo};
 }
 function createTodo (name,date,priority){
     let tasks = [];
@@ -39,14 +44,14 @@ const domManager  =  (function(){
     const populateStorage  = function(){
        
         localStorage.setItem("projects",JSON.stringify(main.getProjects()))
-       // localStorage.setItem("tasks",JSON.stringify())
+     
       
          let YOOOO = JSON.parse(localStorage.getItem("projects"))
          let HEY  =  localStorage.getItem("projects")
         console.log(YOOOO)
         console.log(HEY + "NOT PARSIFIED")
     }
-    const body = document.querySelector(".projects-area");
+    const body = document.querySelector(".body");
     const projectBtn = document.querySelector(".project-btn");
     const todosArea = document.querySelector(".todos-area")
     const dialog  = document.querySelector("dialog");
@@ -59,7 +64,7 @@ const domManager  =  (function(){
     projectBtn.addEventListener("click",function(){
         const input = document.createElement("input");
         input.maxLength = 20;
-        
+      
         body.appendChild(input);
         const buttonsContainer = document.createElement("div");
         buttonsContainer.classList.add("buttons-container")
@@ -103,16 +108,40 @@ const domManager  =  (function(){
         input.addEventListener("keydown",handleConfirmEnter)
     })
     const populateProjects = function(){
+        body.innerHTML = ""
         main.projects.map(function(current){
+            current.isGenerated = false;
             const div = document.createElement("div");
+
             if (current.isGenerated == false){
                 div.textContent = current.name
                 div.classList.add("project-div")
                 current.isGenerated = true;
+                let removeButton = document.createElement("button")
+                removeButton.textContent = "";
+                div.appendChild(removeButton);
+               
                 body.appendChild(div)
                populateTodos(current)
             }
             div.addEventListener("click",populateTodos)
+        })
+        let removeProjectBtn = document.querySelectorAll(".project-div button")
+        removeProjectBtn.forEach(function(current){
+            current.addEventListener("click",function(){
+                
+                let correspondingProject = main.projects.filter(function(project){
+                    if ( current.parentNode.textContent == project.name){
+                        return true;
+                    }
+                    
+                })
+                main.removeProject(correspondingProject[0])
+                    populateStorage()
+                    populateProjects()
+                
+               
+            })
         })
     }
 
@@ -142,13 +171,18 @@ const domManager  =  (function(){
             let todosTitle = document.createElement("h2");
             let taskArea = document.createElement("div");
             let todoDate = document.createElement("p");
+            let todoRemove = document.createElement("button");
             todoDate.textContent  = current.date
             todosTitle.textContent = current.name;
             todosDiv.classList.add("todos-div");
             todosArea.appendChild(todosDiv);
             todosDiv.appendChild(todosTitle)
             todosDiv.appendChild(todoDate);
+            
+            
             todosDiv.appendChild(taskArea);
+            todosDiv.appendChild(todoRemove);
+            todoRemove.textContent =  "remove";
             if (current.priority == "importance-4"){
                 todosDiv.classList.add("very-important");
             }
@@ -178,6 +212,23 @@ const domManager  =  (function(){
             
      
         })
+        let removeTodoBtn = document.querySelectorAll(".todos-div button")
+        removeTodoBtn.forEach(function(current){
+            current.addEventListener("click",function(){
+                
+                let correspondingTodo = latestClickedProject.getTodos().filter(function(todo){
+                    if ( current.parentNode.firstChild.textContent == todo.name){
+                        return true;
+                    }
+                    
+                })
+                latestClickedProject.removeTodo(correspondingTodo[0])
+                    populateStorage()
+                    populateProjects()
+                
+               
+            })
+        }) 
        
          }
 
@@ -203,11 +254,29 @@ const domManager  =  (function(){
             }
             else{
                event.preventDefault();
-               latestClickedProject.addTodo(createTodo(formName.value,formDate.value,formImportance.value))
-               console.log(latestClickedProject.getTodos())
-            console.log("formsubmit hey hey")
-            populateTodos(latestClickedProject)
-            dialog.close();
+               if (latestClickedProject.name == "next7days"){
+                return false;
+               }
+               else{
+                latestClickedProject.addTodo(createTodo(formName.value,formDate.value,formImportance.value))
+                
+                let differencewithToday = differenceInCalendarDays(
+                    new Date(),
+                    new Date(formDate.value)
+
+                )
+                
+                if (differencewithToday<7 ){
+                    let Next7days = main.projects.filter(function(current){if(current.name=="next7days"){return true}})[0]
+                    Next7days.addTodo(createTodo(formName.value,formDate.value,formImportance.value))
+                }
+                console.log(formDate.value)
+                console.log(latestClickedProject.getTodos())
+             console.log("formsubmit hey hey")
+             populateTodos(latestClickedProject)
+             dialog.close();
+               }
+             
             }
             
             formName.reportValidity();
@@ -215,8 +284,9 @@ const domManager  =  (function(){
             formImportance.reportValidity();
             formName.value = ""
             formDate.value = ""
-
+   
         })
+    
 
 
 
@@ -246,25 +316,11 @@ const domManager  =  (function(){
                 taskContainer.appendChild(taskCheckbox);
                 taskContainer.appendChild(taskName);
                 taskCheckbox.checked = curent.isDone;
+                populateStorage();
                 
                 
             })
-            let taskCheckbox = document.querySelectorAll(".task-container input");
-      
-           taskCheckbox.forEach(function(currentCheckbox){
-            currentCheckbox.addEventListener("click",function(currentCheckbox){
-                let h2Text = currentCheckbox.target.parentNode.parentNode.parentNode.firstChild.textContent
-                let currentTodo =  latestClickedProject.getTodos().filter(function(current){
-                    if (current.name == h2Text){
-                        
-                        return true
-                    }})
-                currentTodo[0].getTasks().map(function(currenttask){
-                    if ( currentCheckbox.target.nextSibling.textContent == currenttask.name){
-                        currenttask.isDone = currentCheckbox.target.checked;
-                    }
-                })
-           })})
+          
            
     }
     else if (e.name !=undefined){
@@ -288,49 +344,73 @@ const domManager  =  (function(){
             taskCheckbox.setAttribute("type","checkbox");
             let taskName = document.createElement("p");
             taskName.textContent = curent.name;
+            taskCheckbox.checked = curent.isDone
             taskArea.appendChild(taskContainer);
             taskContainer.appendChild(taskCheckbox);
             taskContainer.appendChild(taskName);
+            populateStorage();
             
         })
+      
     }
+    let taskCheckbox = document.querySelectorAll(".task-container input");
+      
+    taskCheckbox.forEach(function(currentCheckbox){
+       
+     currentCheckbox.addEventListener("click",function(currentCheckbox){
+         let h2Text = currentCheckbox.target.parentNode.parentNode.parentNode.firstChild.textContent
+         let currentTodo =  latestClickedProject.getTodos().filter(function(current){
+             if (current.name == h2Text){
+                 
+                 return true
+             }})
+            
+        let currentTask = currentTodo[0].getTasks().filter(function(current){
+                if (current.name == currentCheckbox.target.nextSibling.textContent){
+                    return true
+                }
+            })
+            currentTask[0].isDone = currentCheckbox.target.checked;
+            populateStorage()
+            
+            })})
 }
 
 /*
 
 
-figure out how to  save todos and tassk aswell.     figure it out bruvBUUUUUUVVV
 
-add local storage
-
-
-add home project with all todos
-and due in 7 days projecetsefsfsdfjskfjsklfjsklfjekdfjziorfjzeios
-
-add styiling withing todos - font, flex display etc
- when tasks are checked they go to the bottom
+everytime  a new todo is added{
+    if the date of todo is seven days from today
+    append todo to next7days
+}
 
 
 
 */
 
-    return {populateProjects,populateTodos}
+    return {populateProjects,populateTodos,populateTasks}
 })()
-if (!localStorage.getItem("projects")){
+let Next7days = ""
+let testVaarrr = localStorage.getItem("projects")
+if (testVaarrr =="[]"){
     let hello = 1;
+     Next7days = createProject("next7days")
+    main.addProject(Next7days)
+    domManager.populateProjects()
 }
 else{
     const storedProjects = JSON.parse(localStorage.getItem("projects"));
     
     storedProjects.forEach(function(storedProject) {
-        // Recreate each project using createProject and pass in the stored todos
+       
         const recreatedProject = createProject(storedProject.name);
         
         storedProject.todos.forEach(function(storedTodo) {
-            // Recreate each todo using createTodo and pass in the stored tasks
+          
             const recreatedTodo = createTodo(storedTodo.name, storedTodo.date, storedTodo.priority);
             
-            // Recreate tasks and add them to the todo
+          
             storedTodo.tasks.forEach(function(storedTask) {
                 const recreatedTask = createTask(storedTask.name, storedTask.isDone);
                 recreatedTodo.addTask(recreatedTask);
@@ -339,31 +419,24 @@ else{
             recreatedProject.addTodo(recreatedTodo);
         });
 
-        // Add the fully reconstructed project back to main.projects
+      
         main.addProject(recreatedProject);
     });
 
 
-  /*   JSON.parse(localStorage.getItem("projects")).forEach(function(current){
-        main.addProject(createProject(current.name,current.todos))
-        
-        // the porblem is todo objkects dont have their gettasks functionality
-        // so i need to recreate them like i did with obkects
-        
-    })
-    main.projects.forEach(function(current){
-        current.todos.forEach(function(currentTodo){
-            current.addTodo(createTodo(currentTodo.name,currentTodo.date,currentTodo.priority))
-        }) 
-    }) */ 
+ 
     
     domManager.populateProjects()
     main.projects.forEach(function(current){
         domManager.populateTodos(current)
+        current.todos.forEach(function(todo){
+            domManager.populateTasks(todo);
+        })
     })
     
     
     
     
 }
+
     
